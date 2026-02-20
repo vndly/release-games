@@ -4,8 +4,11 @@ const ctx = canvas.getContext('2d');
 const GRID_SIZE = 7;
 const TILE_COLOR = '#F5F0E1';
 const BG_COLOR = '#444444';
+const PLAYER_COLOR = '#E74C3C';
 const MARGIN_RATIO = 0.1;
 const GAP_RATIO = 0.002;
+
+const player = { row: GRID_SIZE - 1, col: 0 };
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -36,6 +39,11 @@ function draw() {
       ctx.fillRect(x, y, tileSize, tileSize);
     }
   }
+
+  const px = offsetX + player.col * (tileSize + gap);
+  const py = offsetY + player.row * (tileSize + gap);
+  ctx.fillStyle = PLAYER_COLOR;
+  ctx.fillRect(px, py, tileSize, tileSize);
 }
 
 window.addEventListener('resize', resize);
