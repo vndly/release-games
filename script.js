@@ -8,11 +8,14 @@ const PLAYER_COLOR = '#E74C3C';
 const PATH_COLOR = '#6ABE6A';
 const START_ROW = GRID_SIZE - 1;
 const START_COL = 0;
+const RESET_DURATION = 1000;
 const MARGIN_RATIO = 0.1;
 const GAP_RATIO = 0.002;
 
 const player = { row: START_ROW, col: START_COL };
 const pathSet = new Set();
+let animating = false;
+let playerScale = 1;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -112,13 +115,34 @@ function draw() {
 
   const px = offsetX + player.col * (tileSize + gap);
   const py = offsetY + player.row * (tileSize + gap);
+  const size = tileSize * playerScale;
+  const offset = (tileSize - size) / 2;
   ctx.fillStyle = PLAYER_COLOR;
-  ctx.fillRect(px, py, tileSize, tileSize);
+  ctx.fillRect(px + offset, py + offset, size, size);
+}
+
+function startResetAnimation() {
+  const startTime = performance.now();
+  function frame(now) {
+    const elapsed = now - startTime;
+    if (elapsed >= RESET_DURATION) {
+      playerScale = 1;
+      player.row = START_ROW;
+      player.col = START_COL;
+      animating = false;
+      draw();
+      return;
+    }
+    playerScale = Math.max(0, 1 - elapsed / RESET_DURATION);
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
 
 window.addEventListener('resize', resize);
 window.addEventListener('keydown', (e) => {
-  if (e.repeat) return;
+  if (e.repeat || animating) return;
   let dr = 0, dc = 0;
   switch (e.key) {
     case 'ArrowUp':    case 'w': case 'W': dr = -1; break;
@@ -135,8 +159,12 @@ window.addEventListener('keydown', (e) => {
     player.row = nr;
     player.col = nc;
   } else {
-    player.row = START_ROW;
-    player.col = START_COL;
+    player.row = nr;
+    player.col = nc;
+    animating = true;
+    draw();
+    startResetAnimation();
+    return;
   }
   draw();
 });
