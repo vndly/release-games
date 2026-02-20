@@ -47,4 +47,22 @@ function draw() {
 }
 
 window.addEventListener('resize', resize);
+window.addEventListener('keydown', (e) => {
+  let dr = 0, dc = 0;
+  switch (e.key) {
+    case 'ArrowUp':    case 'w': case 'W': dr = -1; break;
+    case 'ArrowDown':  case 's': case 'S': dr =  1; break;
+    case 'ArrowLeft':  case 'a': case 'A': dc = -1; break;
+    case 'ArrowRight': case 'd': case 'D': dc =  1; break;
+    default: return;
+  }
+  e.preventDefault();
+  const nr = player.row + dr;
+  const nc = player.col + dc;
+  if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+    player.row = nr;
+    player.col = nc;
+    draw();
+  }
+});
 resize();
