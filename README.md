@@ -1,2 +1,1 @@
-# release-games
-Games to choose who releases next
+# Release Games
