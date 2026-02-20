@@ -147,12 +147,14 @@ function draw() {
   if (timerRunning) {
     const elapsed = performance.now() - timerStart;
     const progress = Math.min(elapsed / TIMER_DURATION, 1);
-    const bw = (tileSize / 2) * progress;
+    const inset = (tileSize / 2) * progress;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(px, py, tileSize, tileSize);
+    ctx.rect(px + inset, py + inset, tileSize - inset * 2, tileSize - inset * 2);
     ctx.fillStyle = `rgba(0, 0, 0, ${TIMER_OPACITY})`;
-    ctx.fillRect(px, py, tileSize, bw);
-    ctx.fillRect(px, py + tileSize - bw, tileSize, bw);
-    ctx.fillRect(px, py + bw, bw, tileSize - bw * 2);
-    ctx.fillRect(px + tileSize - bw, py + bw, bw, tileSize - bw * 2);
+    ctx.fill('evenodd');
+    ctx.restore();
   }
 }
 
