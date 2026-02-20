@@ -11,6 +11,7 @@ const START_COL = 0;
 const RESET_DURATION = 1000;
 const MARGIN_RATIO = 0.1;
 const GAP_RATIO = 0.002;
+const PATH_ATTEMPTS = 500;
 
 const player = { row: START_ROW, col: START_COL };
 const pathSet = new Set();
@@ -32,62 +33,79 @@ function getOrthogonalNeighbors(row, col) {
   return neighbors;
 }
 
-function shuffledCandidates(row, col, visited) {
+function scoredCandidates(row, col, visited) {
   const candidates = [];
   for (const [nr, nc] of getOrthogonalNeighbors(row, col)) {
-    if (!visited.has(nr + ',' + nc)) candidates.push([nr, nc]);
+    if (!visited.has(nr + ',' + nc)) {
+      let freeNeighbors = 0;
+      for (const [ar, ac] of getOrthogonalNeighbors(nr, nc)) {
+        if (!visited.has(ar + ',' + ac)) freeNeighbors++;
+      }
+      const dist = nr + (GRID_SIZE - 1 - nc);
+      const score = dist * 2 - freeNeighbors * 3 + Math.random() * 4;
+      candidates.push([nr, nc, score]);
+    }
   }
-  for (let i = candidates.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  candidates.sort((a, b) => a[2] - b[2]);
+  return candidates.map(([r, c]) => [r, c]);
+}
+
+function findPath(endKey) {
+  const path = [[START_ROW, START_COL]];
+  const visited = new Set([START_ROW + ',' + START_COL]);
+  const stack = [scoredCandidates(START_ROW, START_COL, visited)];
+
+  while (stack.length > 0) {
+    const [cr, cc] = path[path.length - 1];
+
+    if (cr + ',' + cc === endKey) return new Set(visited);
+
+    const candidates = stack[stack.length - 1];
+    let extended = false;
+
+    while (candidates.length > 0) {
+      const [nr, nc] = candidates.pop();
+      const nKey = nr + ',' + nc;
+      if (visited.has(nKey)) continue;
+      let pathNeighborCount = 0;
+      for (const [ar, ac] of getOrthogonalNeighbors(nr, nc)) {
+        if (visited.has(ar + ',' + ac)) pathNeighborCount++;
+      }
+      if (pathNeighborCount !== 1) continue;
+
+      visited.add(nKey);
+      path.push([nr, nc]);
+      stack.push(scoredCandidates(nr, nc, visited));
+      extended = true;
+      break;
+    }
+
+    if (!extended) {
+      stack.pop();
+      const [br, bc] = path.pop();
+      visited.delete(br + ',' + bc);
+    }
   }
-  return candidates;
+  return null;
 }
 
 function generatePath() {
   const endKey = '0,' + (GRID_SIZE - 1);
+  const maxCells = GRID_SIZE * GRID_SIZE;
+  let best = null;
 
-  while (true) {
-    const path = [[START_ROW, START_COL]];
-    const visited = new Set([START_ROW + ',' + START_COL]);
-    const stack = [shuffledCandidates(START_ROW, START_COL, visited)];
-
-    while (stack.length > 0) {
-      const [cr, cc] = path[path.length - 1];
-
-      if (cr + ',' + cc === endKey) {
-        pathSet.clear();
-        for (const key of visited) pathSet.add(key);
-        return;
-      }
-
-      const candidates = stack[stack.length - 1];
-      let extended = false;
-
-      while (candidates.length > 0) {
-        const [nr, nc] = candidates.pop();
-        const nKey = nr + ',' + nc;
-        if (visited.has(nKey)) continue;
-        let pathNeighborCount = 0;
-        for (const [ar, ac] of getOrthogonalNeighbors(nr, nc)) {
-          if (visited.has(ar + ',' + ac)) pathNeighborCount++;
-        }
-        if (pathNeighborCount !== 1) continue;
-
-        visited.add(nKey);
-        path.push([nr, nc]);
-        stack.push(shuffledCandidates(nr, nc, visited));
-        extended = true;
-        break;
-      }
-
-      if (!extended) {
-        stack.pop();
-        const [br, bc] = path.pop();
-        visited.delete(br + ',' + bc);
-      }
+  for (let i = 0; i < PATH_ATTEMPTS; i++) {
+    const result = findPath(endKey);
+    if (result && (!best || result.size > best.size)) {
+      best = result;
+      if (best.size >= maxCells) break;
     }
   }
+
+  while (!best) best = findPath(endKey);
+
+  pathSet.clear();
+  for (const key of best) pathSet.add(key);
 }
 
 function draw() {
