@@ -17,6 +17,7 @@ const TIMER_OPACITY = 0.6;
 
 const player = { row: START_ROW, col: START_COL };
 const pathSet = new Set();
+const visitedSet = new Set([START_ROW + ',' + START_COL]);
 let animating = false;
 let playerScale = 1;
 let timerStart = 0;
@@ -189,6 +190,8 @@ function startResetAnimation() {
       playerScale = 1;
       player.row = START_ROW;
       player.col = START_COL;
+      visitedSet.clear();
+      visitedSet.add(START_ROW + ',' + START_COL);
       animating = false;
       draw();
       startTimer();
@@ -216,9 +219,11 @@ window.addEventListener('keydown', (e) => {
   const nr = player.row + dr;
   const nc = player.col + dc;
   if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) return;
+  if (visitedSet.has(nr + ',' + nc)) return;
   if (pathSet.has(nr + ',' + nc)) {
     player.row = nr;
     player.col = nc;
+    visitedSet.add(nr + ',' + nc);
     startTimer();
   } else {
     stopTimer();
