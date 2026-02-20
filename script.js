@@ -6,10 +6,12 @@ const TILE_COLOR = '#F5F0E1';
 const BG_COLOR = '#444444';
 const PLAYER_COLOR = '#E74C3C';
 const PATH_COLOR = '#6ABE6A';
+const START_ROW = GRID_SIZE - 1;
+const START_COL = 0;
 const MARGIN_RATIO = 0.1;
 const GAP_RATIO = 0.002;
 
-const player = { row: GRID_SIZE - 1, col: 0 };
+const player = { row: START_ROW, col: START_COL };
 const pathSet = new Set();
 
 function resize() {
@@ -43,9 +45,9 @@ function generatePath() {
   const endKey = '0,' + (GRID_SIZE - 1);
 
   while (true) {
-    const path = [[GRID_SIZE - 1, 0]];
-    const visited = new Set([(GRID_SIZE - 1) + ',0']);
-    const stack = [shuffledCandidates(GRID_SIZE - 1, 0, visited)];
+    const path = [[START_ROW, START_COL]];
+    const visited = new Set([START_ROW + ',' + START_COL]);
+    const stack = [shuffledCandidates(START_ROW, START_COL, visited)];
 
     while (stack.length > 0) {
       const [cr, cc] = path[path.length - 1];
@@ -128,11 +130,15 @@ window.addEventListener('keydown', (e) => {
   e.preventDefault();
   const nr = player.row + dr;
   const nc = player.col + dc;
-  if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+  if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) return;
+  if (pathSet.has(nr + ',' + nc)) {
     player.row = nr;
     player.col = nc;
-    draw();
+  } else {
+    player.row = START_ROW;
+    player.col = START_COL;
   }
+  draw();
 });
 generatePath();
 resize();
