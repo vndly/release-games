@@ -12,11 +12,16 @@ const RESET_DURATION = 1000;
 const MARGIN_RATIO = 0.1;
 const GAP_RATIO = 0.002;
 const PATH_ATTEMPTS = 500;
+const TIMER_DURATION = 3000;
+const TIMER_OPACITY = 0.6;
 
 const player = { row: START_ROW, col: START_COL };
 const pathSet = new Set();
 let animating = false;
 let playerScale = 1;
+let timerStart = 0;
+let timerRunning = false;
+let timerRAF = 0;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -137,6 +142,43 @@ function draw() {
   const offset = (tileSize - size) / 2;
   ctx.fillStyle = PLAYER_COLOR;
   ctx.fillRect(px + offset, py + offset, size, size);
+
+  if (timerRunning) {
+    const elapsed = performance.now() - timerStart;
+    const progress = Math.min(elapsed / TIMER_DURATION, 1);
+    const bw = (tileSize / 2) * progress;
+    ctx.fillStyle = `rgba(0, 0, 0, ${TIMER_OPACITY})`;
+    ctx.fillRect(px, py, tileSize, bw);
+    ctx.fillRect(px, py + tileSize - bw, tileSize, bw);
+    ctx.fillRect(px, py + bw, bw, tileSize - bw * 2);
+    ctx.fillRect(px + tileSize - bw, py + bw, bw, tileSize - bw * 2);
+  }
+}
+
+function stopTimer() {
+  timerRunning = false;
+  cancelAnimationFrame(timerRAF);
+  timerRAF = 0;
+}
+
+function startTimer() {
+  stopTimer();
+  timerStart = performance.now();
+  timerRunning = true;
+
+  function timerFrame(now) {
+    if (!timerRunning) return;
+    const elapsed = now - timerStart;
+    if (elapsed >= TIMER_DURATION) {
+      timerRunning = false;
+      animating = true;
+      startResetAnimation();
+      return;
+    }
+    draw();
+    timerRAF = requestAnimationFrame(timerFrame);
+  }
+  timerRAF = requestAnimationFrame(timerFrame);
 }
 
 function startResetAnimation() {
@@ -149,6 +191,7 @@ function startResetAnimation() {
       player.col = START_COL;
       animating = false;
       draw();
+      startTimer();
       return;
     }
     playerScale = Math.max(0, 1 - elapsed / RESET_DURATION);
@@ -176,7 +219,9 @@ window.addEventListener('keydown', (e) => {
   if (pathSet.has(nr + ',' + nc)) {
     player.row = nr;
     player.col = nc;
+    startTimer();
   } else {
+    stopTimer();
     player.row = nr;
     player.col = nc;
     animating = true;
@@ -188,3 +233,4 @@ window.addEventListener('keydown', (e) => {
 });
 generatePath();
 resize();
+startTimer();
