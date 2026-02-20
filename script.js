@@ -5,15 +5,84 @@ const GRID_SIZE = 7;
 const TILE_COLOR = '#F5F0E1';
 const BG_COLOR = '#444444';
 const PLAYER_COLOR = '#E74C3C';
+const PATH_COLOR = '#6ABE6A';
 const MARGIN_RATIO = 0.1;
 const GAP_RATIO = 0.002;
 
 const player = { row: GRID_SIZE - 1, col: 0 };
+const pathSet = new Set();
 
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   draw();
+}
+
+function getOrthogonalNeighbors(row, col) {
+  const neighbors = [];
+  if (row > 0)             neighbors.push([row - 1, col]);
+  if (row < GRID_SIZE - 1) neighbors.push([row + 1, col]);
+  if (col > 0)             neighbors.push([row, col - 1]);
+  if (col < GRID_SIZE - 1) neighbors.push([row, col + 1]);
+  return neighbors;
+}
+
+function shuffledCandidates(row, col, visited) {
+  const candidates = [];
+  for (const [nr, nc] of getOrthogonalNeighbors(row, col)) {
+    if (!visited.has(nr + ',' + nc)) candidates.push([nr, nc]);
+  }
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  return candidates;
+}
+
+function generatePath() {
+  const endKey = '0,' + (GRID_SIZE - 1);
+
+  while (true) {
+    const path = [[GRID_SIZE - 1, 0]];
+    const visited = new Set([(GRID_SIZE - 1) + ',0']);
+    const stack = [shuffledCandidates(GRID_SIZE - 1, 0, visited)];
+
+    while (stack.length > 0) {
+      const [cr, cc] = path[path.length - 1];
+
+      if (cr + ',' + cc === endKey) {
+        pathSet.clear();
+        for (const key of visited) pathSet.add(key);
+        return;
+      }
+
+      const candidates = stack[stack.length - 1];
+      let extended = false;
+
+      while (candidates.length > 0) {
+        const [nr, nc] = candidates.pop();
+        const nKey = nr + ',' + nc;
+        if (visited.has(nKey)) continue;
+        let pathNeighborCount = 0;
+        for (const [ar, ac] of getOrthogonalNeighbors(nr, nc)) {
+          if (visited.has(ar + ',' + ac)) pathNeighborCount++;
+        }
+        if (pathNeighborCount !== 1) continue;
+
+        visited.add(nKey);
+        path.push([nr, nc]);
+        stack.push(shuffledCandidates(nr, nc, visited));
+        extended = true;
+        break;
+      }
+
+      if (!extended) {
+        stack.pop();
+        const [br, bc] = path.pop();
+        visited.delete(br + ',' + bc);
+      }
+    }
+  }
 }
 
 function draw() {
@@ -30,12 +99,11 @@ function draw() {
   const offsetX = (canvas.width - totalWidth) / 2;
   const offsetY = (canvas.height - totalHeight) / 2;
 
-  ctx.fillStyle = TILE_COLOR;
-
   for (let row = 0; row < GRID_SIZE; row++) {
     for (let col = 0; col < GRID_SIZE; col++) {
       const x = offsetX + col * (tileSize + gap);
       const y = offsetY + row * (tileSize + gap);
+      ctx.fillStyle = pathSet.has(row + ',' + col) ? PATH_COLOR : TILE_COLOR;
       ctx.fillRect(x, y, tileSize, tileSize);
     }
   }
@@ -66,4 +134,5 @@ window.addEventListener('keydown', (e) => {
     draw();
   }
 });
+generatePath();
 resize();
