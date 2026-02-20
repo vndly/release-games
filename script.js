@@ -48,6 +48,7 @@ function draw() {
 
 window.addEventListener('resize', resize);
 window.addEventListener('keydown', (e) => {
+  if (e.repeat) return;
   let dr = 0, dc = 0;
   switch (e.key) {
     case 'ArrowUp':    case 'w': case 'W': dr = -1; break;
