@@ -1,7 +1,7 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-const GRID_WIDTH = 7;
+const GRID_WIDTH = 9;
 const GRID_HEIGHT = 7;
 const TILE_COLOR = '#F5F0E1';
 const BG_COLOR = '#444444';
@@ -49,9 +49,22 @@ function getOrthogonalNeighbors(row, col) {
   return neighbors;
 }
 
-function scoredCandidates(row, col, visited) {
+function scoredCandidates(row, col, visited, path) {
+  let forbiddenKey = null;
+  if (path.length >= 3) {
+    const [r1, c1] = path[path.length - 3];
+    const [r2, c2] = path[path.length - 2];
+    if (r1 === r2 && r2 === row) {
+      const dc = col - c2;
+      forbiddenKey = row + ',' + (col + dc);
+    } else if (c1 === c2 && c2 === col) {
+      const dr = row - r2;
+      forbiddenKey = (row + dr) + ',' + col;
+    }
+  }
   const candidates = [];
   for (const [nr, nc] of getOrthogonalNeighbors(row, col)) {
+    if (nr + ',' + nc === forbiddenKey) continue;
     if (!visited.has(nr + ',' + nc)) {
       let freeNeighbors = 0;
       for (const [ar, ac] of getOrthogonalNeighbors(nr, nc)) {
@@ -69,7 +82,7 @@ function scoredCandidates(row, col, visited) {
 function findPath(endKey) {
   const path = [[START_ROW, START_COL]];
   const visited = new Set([START_ROW + ',' + START_COL]);
-  const stack = [scoredCandidates(START_ROW, START_COL, visited)];
+  const stack = [scoredCandidates(START_ROW, START_COL, visited, path)];
 
   while (stack.length > 0) {
     const [cr, cc] = path[path.length - 1];
@@ -91,7 +104,7 @@ function findPath(endKey) {
 
       visited.add(nKey);
       path.push([nr, nc]);
-      stack.push(scoredCandidates(nr, nc, visited));
+      stack.push(scoredCandidates(nr, nc, visited, path));
       extended = true;
       break;
     }
