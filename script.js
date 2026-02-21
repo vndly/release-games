@@ -138,9 +138,11 @@ function draw() {
   const scoreMargin = Math.round(smaller * SCORE_MARGIN_RATIO);
   ctx.save();
   ctx.font = `700 ${scoreFontSize}px "Courier New", Courier, monospace`;
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'top';
   ctx.fillStyle = SCORE_COLOR;
+  ctx.textBaseline = 'top';
+  ctx.textAlign = 'left';
+  ctx.fillText(pathSet.size - 1, scoreMargin, scoreMargin);
+  ctx.textAlign = 'right';
   ctx.fillText(globalScore, canvas.width - scoreMargin, scoreMargin);
   ctx.restore();
 
