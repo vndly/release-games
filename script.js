@@ -173,9 +173,11 @@ function startTimer() {
     if (!timerRunning) return;
     const elapsed = now - timerStart;
     if (elapsed >= TIMER_DURATION) {
-      timerRunning = false;
-      animating = true;
-      startResetAnimation();
+      player.row = START_ROW;
+      player.col = START_COL;
+      visitedSet.clear();
+      visitedSet.add(START_ROW + ',' + START_COL);
+      startTimer();
       return;
     }
     draw();
