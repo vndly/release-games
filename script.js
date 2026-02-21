@@ -17,7 +17,8 @@ const TIMER_OPACITY = 0.6;
 const SCORE_COLOR = 'rgba(255, 255, 255, 0.45)';
 const SCORE_SIZE_RATIO = 0.12;
 const SCORE_MARGIN_RATIO = 0.03;
-const SHOW_PATH = true;
+const SHOW_PATH = false;
+const SHOW_PATH_LENGTH = true;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
 
@@ -144,6 +145,10 @@ function draw() {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'right';
   ctx.fillText(globalScore, canvas.width - scoreMargin, scoreMargin);
+  if (SHOW_PATH_LENGTH) {
+    ctx.textAlign = 'left';
+    ctx.fillText(pathSet.size, scoreMargin, scoreMargin);
+  }
   ctx.restore();
 
   for (let row = 0; row < GRID_SIZE; row++) {
