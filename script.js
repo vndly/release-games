@@ -1,12 +1,13 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-const GRID_SIZE = 7;
+const GRID_WIDTH = 7;
+const GRID_HEIGHT = 7;
 const TILE_COLOR = '#F5F0E1';
 const BG_COLOR = '#444444';
 const PLAYER_COLOR = '#E74C3C';
 const PATH_COLOR = '#6ABE6A';
-const START_ROW = GRID_SIZE - 1;
+const START_ROW = GRID_HEIGHT - 1;
 const START_COL = 0;
 const RESET_DURATION = 1000;
 const MARGIN_RATIO = 0.1;
@@ -17,7 +18,7 @@ const TIMER_OPACITY = 0.6;
 const SCORE_COLOR = 'rgba(255, 255, 255, 0.45)';
 const SCORE_SIZE_RATIO = 0.12;
 const SCORE_MARGIN_RATIO = 0.03;
-const SHOW_PATH = false;
+const SHOW_PATH = true;
 const SHOW_PATH_LENGTH = true;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
@@ -41,10 +42,10 @@ function resize() {
 
 function getOrthogonalNeighbors(row, col) {
   const neighbors = [];
-  if (row > 0)             neighbors.push([row - 1, col]);
-  if (row < GRID_SIZE - 1) neighbors.push([row + 1, col]);
-  if (col > 0)             neighbors.push([row, col - 1]);
-  if (col < GRID_SIZE - 1) neighbors.push([row, col + 1]);
+  if (row > 0)              neighbors.push([row - 1, col]);
+  if (row < GRID_HEIGHT - 1) neighbors.push([row + 1, col]);
+  if (col > 0)              neighbors.push([row, col - 1]);
+  if (col < GRID_WIDTH - 1)  neighbors.push([row, col + 1]);
   return neighbors;
 }
 
@@ -56,7 +57,7 @@ function scoredCandidates(row, col, visited) {
       for (const [ar, ac] of getOrthogonalNeighbors(nr, nc)) {
         if (!visited.has(ar + ',' + ac)) freeNeighbors++;
       }
-      const dist = nr + (GRID_SIZE - 1 - nc);
+      const dist = nr + (GRID_WIDTH - 1 - nc);
       const score = dist * 2 - freeNeighbors * 3 + Math.random() * 4;
       candidates.push([nr, nc, score]);
     }
@@ -105,8 +106,8 @@ function findPath(endKey) {
 }
 
 function generatePath() {
-  const endKey = '0,' + (GRID_SIZE - 1);
-  const maxCells = GRID_SIZE * GRID_SIZE;
+  const endKey = '0,' + (GRID_WIDTH - 1);
+  const maxCells = GRID_WIDTH * GRID_HEIGHT;
   let best = null;
 
   for (let i = 0; i < PATH_ATTEMPTS; i++) {
@@ -128,12 +129,15 @@ function draw() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const smaller = Math.min(canvas.width, canvas.height);
-  const gridArea = smaller * (1 - MARGIN_RATIO * 2);
   const gap = smaller * GAP_RATIO;
-  const tileSize = (gridArea - gap * (GRID_SIZE - 1)) / GRID_SIZE;
+  const availW = canvas.width * (1 - MARGIN_RATIO * 2);
+  const availH = canvas.height * (1 - MARGIN_RATIO * 2);
+  const tileFitW = (availW - gap * (GRID_WIDTH - 1)) / GRID_WIDTH;
+  const tileFitH = (availH - gap * (GRID_HEIGHT - 1)) / GRID_HEIGHT;
+  const tileSize = Math.min(tileFitW, tileFitH);
 
-  const totalWidth = tileSize * GRID_SIZE + gap * (GRID_SIZE - 1);
-  const totalHeight = totalWidth;
+  const totalWidth = tileSize * GRID_WIDTH + gap * (GRID_WIDTH - 1);
+  const totalHeight = tileSize * GRID_HEIGHT + gap * (GRID_HEIGHT - 1);
   const offsetX = (canvas.width - totalWidth) / 2;
   const offsetY = (canvas.height - totalHeight) / 2;
 
@@ -151,8 +155,8 @@ function draw() {
   }
   ctx.restore();
 
-  for (let row = 0; row < GRID_SIZE; row++) {
-    for (let col = 0; col < GRID_SIZE; col++) {
+  for (let row = 0; row < GRID_HEIGHT; row++) {
+    for (let col = 0; col < GRID_WIDTH; col++) {
       const x = offsetX + col * (tileSize + gap);
       const y = offsetY + row * (tileSize + gap);
       ctx.fillStyle = (SHOW_PATH && pathSet.has(row + ',' + col)) ? PATH_COLOR : TILE_COLOR;
@@ -251,7 +255,7 @@ window.addEventListener('keydown', (e) => {
   e.preventDefault();
   const nr = player.row + dr;
   const nc = player.col + dc;
-  if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) return;
+  if (nr < 0 || nr >= GRID_HEIGHT || nc < 0 || nc >= GRID_WIDTH) return;
   if (visitedSet.has(nr + ',' + nc)) return;
   if (pathSet.has(nr + ',' + nc)) {
     player.row = nr;
@@ -261,7 +265,7 @@ window.addEventListener('keydown', (e) => {
     if (runScore > globalScore) globalScore = runScore;
     SFX_RIGHT.currentTime = 0;
     SFX_RIGHT.play().catch(() => {});
-    if (nr === 0 && nc === GRID_SIZE - 1) {
+    if (nr === 0 && nc === GRID_WIDTH - 1) {
       stopTimer();
       gameWon = true;
     } else {
