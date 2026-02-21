@@ -18,3 +18,9 @@
 
 - Cracking Tiles
 - Only move forward
+
+-----------------
+
+- Play with sound
+- You can take notes
+- If you arrive to the end, announce it
