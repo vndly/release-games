@@ -15,8 +15,9 @@ const PATH_ATTEMPTS = 500;
 const TIMER_DURATION = 3000;
 const TIMER_OPACITY = 0.6;
 const SCORE_COLOR = 'rgba(255, 255, 255, 0.45)';
-const SCORE_SIZE_RATIO = 0.06;
+const SCORE_SIZE_RATIO = 0.12;
 const SCORE_MARGIN_RATIO = 0.03;
+const SHOW_PATH = true;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
 
@@ -141,8 +142,6 @@ function draw() {
   ctx.font = `700 ${scoreFontSize}px "Courier New", Courier, monospace`;
   ctx.fillStyle = SCORE_COLOR;
   ctx.textBaseline = 'top';
-  ctx.textAlign = 'left';
-  ctx.fillText(pathSet.size - 1, scoreMargin, scoreMargin);
   ctx.textAlign = 'right';
   ctx.fillText(globalScore, canvas.width - scoreMargin, scoreMargin);
   ctx.restore();
@@ -151,7 +150,7 @@ function draw() {
     for (let col = 0; col < GRID_SIZE; col++) {
       const x = offsetX + col * (tileSize + gap);
       const y = offsetY + row * (tileSize + gap);
-      ctx.fillStyle = pathSet.has(row + ',' + col) ? PATH_COLOR : TILE_COLOR;
+      ctx.fillStyle = (SHOW_PATH && pathSet.has(row + ',' + col)) ? PATH_COLOR : TILE_COLOR;
       ctx.fillRect(x, y, tileSize, tileSize);
     }
   }
