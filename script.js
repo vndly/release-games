@@ -14,6 +14,9 @@ const GAP_RATIO = 0.002;
 const PATH_ATTEMPTS = 500;
 const TIMER_DURATION = 3000;
 const TIMER_OPACITY = 0.6;
+const SCORE_COLOR = 'rgba(255, 255, 255, 0.45)';
+const SCORE_SIZE_RATIO = 0.06;
+const SCORE_MARGIN_RATIO = 0.03;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
 
@@ -25,6 +28,7 @@ let playerScale = 1;
 let timerStart = 0;
 let timerRunning = false;
 let timerRAF = 0;
+let globalScore = 0;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -130,6 +134,16 @@ function draw() {
   const offsetX = (canvas.width - totalWidth) / 2;
   const offsetY = (canvas.height - totalHeight) / 2;
 
+  const scoreFontSize = Math.round(smaller * SCORE_SIZE_RATIO);
+  const scoreMargin = Math.round(smaller * SCORE_MARGIN_RATIO);
+  ctx.save();
+  ctx.font = `700 ${scoreFontSize}px "Courier New", Courier, monospace`;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = SCORE_COLOR;
+  ctx.fillText(globalScore, canvas.width - scoreMargin, scoreMargin);
+  ctx.restore();
+
   for (let row = 0; row < GRID_SIZE; row++) {
     for (let col = 0; col < GRID_SIZE; col++) {
       const x = offsetX + col * (tileSize + gap);
@@ -177,6 +191,8 @@ function startTimer() {
     if (elapsed >= TIMER_DURATION) {
       SFX_WRONG.currentTime = 0;
       SFX_WRONG.play().catch(() => {});
+      const runScore = visitedSet.size - 1;
+      if (runScore > globalScore) globalScore = runScore;
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
@@ -196,6 +212,8 @@ function startResetAnimation() {
     const elapsed = now - startTime;
     if (elapsed >= RESET_DURATION) {
       playerScale = 1;
+      const runScore = visitedSet.size - 1;
+      if (runScore > globalScore) globalScore = runScore;
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
@@ -232,6 +250,8 @@ window.addEventListener('keydown', (e) => {
     player.row = nr;
     player.col = nc;
     visitedSet.add(nr + ',' + nc);
+    const runScore = visitedSet.size - 1;
+    if (runScore > globalScore) globalScore = runScore;
     SFX_RIGHT.currentTime = 0;
     SFX_RIGHT.play().catch(() => {});
     startTimer();
