@@ -9,6 +9,7 @@ A vanilla single-page canvas game. No libraries, no build tools, no frameworks.
 - `index.html` — HTML only (structure, links to CSS/JS)
 - `style.css` — All CSS styles
 - `script.js` — All JavaScript logic (canvas rendering, game state, input handling)
+- `audio/` — Sound effects (right.wav, wrong.wav)
 
 ## Conventions
 

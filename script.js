@@ -14,6 +14,8 @@ const GAP_RATIO = 0.002;
 const PATH_ATTEMPTS = 500;
 const TIMER_DURATION = 3000;
 const TIMER_OPACITY = 0.6;
+const SFX_RIGHT = new Audio('audio/right.wav');
+const SFX_WRONG = new Audio('audio/wrong.wav');
 
 const player = { row: START_ROW, col: START_COL };
 const pathSet = new Set();
@@ -173,6 +175,8 @@ function startTimer() {
     if (!timerRunning) return;
     const elapsed = now - timerStart;
     if (elapsed >= TIMER_DURATION) {
+      SFX_WRONG.currentTime = 0;
+      SFX_WRONG.play().catch(() => {});
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
@@ -228,9 +232,13 @@ window.addEventListener('keydown', (e) => {
     player.row = nr;
     player.col = nc;
     visitedSet.add(nr + ',' + nc);
+    SFX_RIGHT.currentTime = 0;
+    SFX_RIGHT.play().catch(() => {});
     startTimer();
   } else {
     stopTimer();
+    SFX_WRONG.currentTime = 0;
+    SFX_WRONG.play().catch(() => {});
     player.row = nr;
     player.col = nc;
     animating = true;
