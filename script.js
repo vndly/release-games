@@ -29,6 +29,7 @@ let timerStart = 0;
 let timerRunning = false;
 let timerRAF = 0;
 let globalScore = 0;
+let gameWon = false;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -234,7 +235,7 @@ function startResetAnimation() {
 
 window.addEventListener('resize', resize);
 window.addEventListener('keydown', (e) => {
-  if (e.repeat || animating) return;
+  if (e.repeat || animating || gameWon) return;
   let dr = 0, dc = 0;
   switch (e.key) {
     case 'ArrowUp':    case 'w': case 'W': dr = -1; break;
@@ -256,7 +257,12 @@ window.addEventListener('keydown', (e) => {
     if (runScore > globalScore) globalScore = runScore;
     SFX_RIGHT.currentTime = 0;
     SFX_RIGHT.play().catch(() => {});
-    startTimer();
+    if (nr === 0 && nc === GRID_SIZE - 1) {
+      stopTimer();
+      gameWon = true;
+    } else {
+      startTimer();
+    }
   } else {
     stopTimer();
     SFX_WRONG.currentTime = 0;
