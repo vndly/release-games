@@ -5,7 +5,7 @@ const GRID_WIDTH = 9;
 const GRID_HEIGHT = 7;
 const TILE_COLOR = '#F5F0E1';
 const BG_COLOR = '#444444';
-const PLAYER_COLOR = '#E74C3C';
+const PLAYER_COLOR = '#0094FF';
 const PATH_COLOR = '#6ABE6A';
 const START_ROW = GRID_HEIGHT - 1;
 const START_COL = 0;
@@ -18,8 +18,7 @@ const TIMER_OPACITY = 0.6;
 const SCORE_COLOR = 'rgba(255, 255, 255, 0.45)';
 const SCORE_SIZE_RATIO = 0.12;
 const SCORE_MARGIN_RATIO = 0.03;
-const SHOW_PATH = true;
-const SHOW_PATH_LENGTH = true;
+const DEBUG = false;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
 
@@ -162,7 +161,7 @@ function draw() {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'right';
   ctx.fillText(globalScore, canvas.width - scoreMargin, scoreMargin);
-  if (SHOW_PATH_LENGTH) {
+  if (DEBUG) {
     ctx.textAlign = 'left';
     ctx.fillText(pathSet.size, scoreMargin, scoreMargin);
   }
@@ -172,7 +171,7 @@ function draw() {
     for (let col = 0; col < GRID_WIDTH; col++) {
       const x = offsetX + col * (tileSize + gap);
       const y = offsetY + row * (tileSize + gap);
-      ctx.fillStyle = (SHOW_PATH && pathSet.has(row + ',' + col)) ? PATH_COLOR : TILE_COLOR;
+      ctx.fillStyle = (DEBUG && pathSet.has(row + ',' + col)) ? PATH_COLOR : TILE_COLOR;
       ctx.fillRect(x, y, tileSize, tileSize);
     }
   }
