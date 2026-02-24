@@ -182,9 +182,10 @@ function draw() {
     }
   }
 
+  const px = offsetX + player.col * (tileSize + gap);
+  const py = offsetY + player.row * (tileSize + gap);
+
   if (!gameOver) {
-    const px = offsetX + player.col * (tileSize + gap);
-    const py = offsetY + player.row * (tileSize + gap);
     const size = tileSize * playerScale;
     const offset = (tileSize - size) / 2;
     ctx.fillStyle = PLAYER_COLOR;
