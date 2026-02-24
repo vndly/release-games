@@ -19,7 +19,8 @@ const SCORE_COLOR = '#FFFFFF';
 const SCORE_SIZE_RATIO = 0.06;
 const SCORE_MARGIN_RATIO = 0.03;
 const SCORE_LABEL = 'SCORE: ';
-const ATTEMPTS_LABEL = 'ATTEMPTS: ';
+const ATTEMPTS_LABEL = 'LIVES: ';
+const STARTING_LIVES = 20;
 const DEBUG = false;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
@@ -33,8 +34,9 @@ let timerStart = 0;
 let timerRunning = false;
 let timerRAF = 0;
 let globalScore = 0;
-let resetCount = 0;
+let remainingLives = STARTING_LIVES;
 let gameWon = false;
+let gameOver = false;
 
 function resize() {
   canvas.width = window.innerWidth;
@@ -164,7 +166,7 @@ function draw() {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillText(SCORE_LABEL + globalScore, scoreMargin, scoreMargin);
-  ctx.fillText(ATTEMPTS_LABEL + resetCount, scoreMargin, scoreMargin + scoreFontSize * 1.2);
+  ctx.fillText(ATTEMPTS_LABEL + remainingLives, scoreMargin, scoreMargin + scoreFontSize * 1.2);
   if (DEBUG) {
     ctx.textAlign = 'right';
     ctx.fillText(pathSet.size, canvas.width - scoreMargin, scoreMargin);
@@ -180,12 +182,14 @@ function draw() {
     }
   }
 
-  const px = offsetX + player.col * (tileSize + gap);
-  const py = offsetY + player.row * (tileSize + gap);
-  const size = tileSize * playerScale;
-  const offset = (tileSize - size) / 2;
-  ctx.fillStyle = PLAYER_COLOR;
-  ctx.fillRect(px + offset, py + offset, size, size);
+  if (!gameOver) {
+    const px = offsetX + player.col * (tileSize + gap);
+    const py = offsetY + player.row * (tileSize + gap);
+    const size = tileSize * playerScale;
+    const offset = (tileSize - size) / 2;
+    ctx.fillStyle = PLAYER_COLOR;
+    ctx.fillRect(px + offset, py + offset, size, size);
+  }
 
   if (timerRunning) {
     const elapsed = performance.now() - timerStart;
@@ -199,6 +203,7 @@ function draw() {
     ctx.fill('evenodd');
     ctx.restore();
   }
+
 }
 
 function stopTimer() {
@@ -220,7 +225,14 @@ function startTimer() {
       SFX_WRONG.play().catch(() => {});
       const runScore = visitedSet.size - 1;
       if (runScore > globalScore) globalScore = runScore;
-      resetCount++;
+      remainingLives--;
+      if (remainingLives <= 0) {
+        remainingLives = 0;
+        gameOver = true;
+        stopTimer();
+        draw();
+        return;
+      }
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
@@ -242,7 +254,14 @@ function startResetAnimation() {
       playerScale = 1;
       const runScore = visitedSet.size - 1;
       if (runScore > globalScore) globalScore = runScore;
-      resetCount++;
+      remainingLives--;
+      if (remainingLives <= 0) {
+        remainingLives = 0;
+        gameOver = true;
+        animating = false;
+        draw();
+        return;
+      }
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
@@ -261,7 +280,7 @@ function startResetAnimation() {
 
 window.addEventListener('resize', resize);
 window.addEventListener('keydown', (e) => {
-  if (e.repeat || animating || gameWon) return;
+  if (e.repeat || animating || gameWon || gameOver) return;
   let dr = 0, dc = 0;
   switch (e.key) {
     case 'ArrowUp':    case 'w': case 'W': dr = -1; break;
