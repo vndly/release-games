@@ -19,7 +19,8 @@ const SCORE_COLOR = '#FFFFFF';
 const SCORE_SIZE_RATIO = 0.06;
 const SCORE_MARGIN_RATIO = 0.03;
 const SCORE_LABEL = 'SCORE: ';
-const DEBUG = true;
+const ATTEMPTS_LABEL = 'ATTEMPTS: ';
+const DEBUG = false;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
 
@@ -32,6 +33,7 @@ let timerStart = 0;
 let timerRunning = false;
 let timerRAF = 0;
 let globalScore = 0;
+let resetCount = 0;
 let gameWon = false;
 
 function resize() {
@@ -162,6 +164,7 @@ function draw() {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillText(SCORE_LABEL + globalScore, scoreMargin, scoreMargin);
+  ctx.fillText(ATTEMPTS_LABEL + resetCount, scoreMargin, scoreMargin + scoreFontSize * 1.2);
   if (DEBUG) {
     ctx.textAlign = 'right';
     ctx.fillText(pathSet.size, canvas.width - scoreMargin, scoreMargin);
@@ -217,6 +220,7 @@ function startTimer() {
       SFX_WRONG.play().catch(() => {});
       const runScore = visitedSet.size - 1;
       if (runScore > globalScore) globalScore = runScore;
+      resetCount++;
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
@@ -238,6 +242,7 @@ function startResetAnimation() {
       playerScale = 1;
       const runScore = visitedSet.size - 1;
       if (runScore > globalScore) globalScore = runScore;
+      resetCount++;
       player.row = START_ROW;
       player.col = START_COL;
       visitedSet.clear();
