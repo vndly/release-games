@@ -16,9 +16,10 @@ const PATH_ATTEMPTS = 500;
 const TIMER_DURATION = 3000;
 const TIMER_OPACITY = 0.3;
 const SCORE_COLOR = '#FFFFFF';
-const SCORE_SIZE_RATIO = 0.12;
+const SCORE_SIZE_RATIO = 0.06;
 const SCORE_MARGIN_RATIO = 0.03;
-const DEBUG = false;
+const SCORE_LABEL = 'SCORE: ';
+const DEBUG = true;
 const SFX_RIGHT = new Audio('audio/right.wav');
 const SFX_WRONG = new Audio('audio/wrong.wav');
 
@@ -159,11 +160,11 @@ function draw() {
   ctx.font = `700 ${scoreFontSize}px "Courier New", Courier, monospace`;
   ctx.fillStyle = SCORE_COLOR;
   ctx.textBaseline = 'top';
-  ctx.textAlign = 'right';
-  ctx.fillText(globalScore, canvas.width - scoreMargin, scoreMargin);
+  ctx.textAlign = 'left';
+  ctx.fillText(SCORE_LABEL + globalScore, scoreMargin, scoreMargin);
   if (DEBUG) {
-    ctx.textAlign = 'left';
-    ctx.fillText(pathSet.size, scoreMargin, scoreMargin);
+    ctx.textAlign = 'right';
+    ctx.fillText(pathSet.size, canvas.width - scoreMargin, scoreMargin);
   }
   ctx.restore();
 
