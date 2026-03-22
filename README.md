@@ -18,3 +18,14 @@
 
 - Cracking Tiles
 - Only move forward
+
+-----------------
+
+New idea:
+- there is a horizontal line close to the bottom of the screen
+- a ball is resting on the line
+- the player presses the space bar to make the ball jump
+- the ball goes up and then gravity pull it down
+- the player has to press the space bar again at the right time to make the ball jump again before the ball touches the line again
+- the closer to the line the ball is when the player presses the space bar, the more points the player gets
+- if the ball touches the line, the game is over
